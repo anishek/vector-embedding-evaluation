@@ -1,0 +1,11 @@
+[project]
+name = "vector-embedding-evaluation"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.16.1",
+    "openai>=1.82.1",
+    "sentence-transformers>=4.1.0",
+]
