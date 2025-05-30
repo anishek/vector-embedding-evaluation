@@ -8,4 +8,5 @@ dependencies = [
     "openai>=1.82.1",
     "psycopg2>=2.9.10",
     "sentence-transformers>=4.1.0",
+    "yoyo-migrations>=9.0.0",
 ]
