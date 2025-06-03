@@ -16,6 +16,6 @@ steps = [
     ),
     step(
         "create table e5_large_instruct (location text not null, embedding vector(1024) not null)",
-        "drop table e5_large_instruct",
+        "drop table if exists e5_large_instruct",
     ),
 ]
