@@ -3,19 +3,10 @@ from dotenv import load_dotenv
 # loading local configurations in env variables
 load_dotenv()
 
-import openai
 from sentence_transformers import SentenceTransformer
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from file_management import FileReader
 from db_manager import PostgresManager
-
-
-def openai_embedding(text):
-    openai.embeddings.create(
-        model="text-embedding-ada-002", input=text.replace("\n", " ")
-    )
-    embedding = response["data"][0]["embedding"]
-    return embedding
 
 
 # based on https://huggingface.co/intfloat/multilingual-e5-large-instruct
