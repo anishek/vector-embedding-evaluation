@@ -45,7 +45,7 @@ class PostgresManager:
             with self.conn.cursor() as cur:
                 cur.execute(
                     "INSERT INTO e5_large_instruct (location, embedding, text_content) VALUES (%s, %s, %s)",
-                    (location, embedding, text_content),
+                    (location, embedding.tolist(), text_content),
                 )
                 self.conn.commit()
         except Exception as e:
