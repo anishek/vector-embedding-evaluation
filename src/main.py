@@ -7,13 +7,12 @@ from sentence_transformers import SentenceTransformer
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from file_management import FileReader
 from db_manager import PostgresManager
-import asyncio
 from concurrent.futures import ProcessPoolExecutor
 
 
 # based on https://huggingface.co/intfloat/multilingual-e5-large-instruct
 # from leaderboard at https://huggingface.co/spaces/mteb/leaderboard
-async def e5_large_embedding(input_data, read_from_location, process_in_parallel=False):
+def e5_large_embedding(input_data, read_from_location, process_in_parallel=False):
     model = SentenceTransformer("intfloat/multilingual-e5-large-instruct")
     # to get the max token length that the model can process used
     print("Max token length of the model:", model.max_seq_length)  # Output: 512
@@ -23,6 +22,7 @@ async def e5_large_embedding(input_data, read_from_location, process_in_parallel
 
     if process_in_parallel:
          with ProcessPoolExecutor() as executor:
+            print("starting parallel processing on ", executor._max_workers)
             results = executor.map(get_embeddings_parallel, chunked_texts)
     else:
         results =  [(text, model.encode(text)) for text in chunked_texts]
@@ -63,7 +63,7 @@ def recursive_chunking(text, chunk_size=512):
 def main():
     reader = FileReader()
     read_from_location, content = reader.read_next()
-    asyncio.run(e5_large_embedding(content, read_from_location))
+    e5_large_embedding(content, read_from_location, process_in_parallel=True)
 
 
 if __name__ == "__main__":
