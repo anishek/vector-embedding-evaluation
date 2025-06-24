@@ -13,39 +13,36 @@ from concurrent.futures import ProcessPoolExecutor
 
 # based on https://huggingface.co/intfloat/multilingual-e5-large-instruct
 # from leaderboard at https://huggingface.co/spaces/mteb/leaderboard
-async def e5_large_embedding(input_data, read_from_location):
+async def e5_large_embedding(input_data, read_from_location, process_in_parallel=False):
     model = SentenceTransformer("intfloat/multilingual-e5-large-instruct")
     # to get the max token length that the model can process used
-    print("Max:", model.max_seq_length)  # Output: 512
+    print("Max token length of the model:", model.max_seq_length)  # Output: 512
     embeddings_to_add = []
     chunked_texts = recursive_chunking(input_data, model.max_seq_length)
     print("chunked_texts ", len(chunked_texts))
-    with ProcessPoolExecutor() as executor:
-        tasks = [
-            get_embeddings_async(chunked_text, executor)
-            for chunked_text in chunked_texts
-        ]
-        results = await asyncio.gather(*tasks)
-        for result in results:
-            text, embedding = result
-            embeddings_to_add.append(
-                {
-                    "location": read_from_location,
-                    "embedding": embedding,
-                    "text_content": text,
-                }
-            )
+
+    if process_in_parallel:
+         with ProcessPoolExecutor() as executor:
+            results = executor.map(get_embeddings_parallel, chunked_texts)
+    else:
+        results =  [(text, model.encode(text)) for text in chunked_texts]
+    
+    for result in results:
+        text, embedding = result
+        embeddings_to_add.append(
+            {
+                "location": read_from_location,
+                "embedding": embedding,
+                "text_content": text,
+            }
+        )
+    print("starting persistence")
     pg_manager = PostgresManager()
-    print("embeddings found : ", len(embeddings_to_add))
+    print("entries to be made : ", len(embeddings_to_add))
     pg_manager.insert_embeddings_batch(embeddings_to_add)
+    print("finished persistence")
 
-
-async def get_embeddings_async(text, executor):
-    loop = asyncio.get_event_loop()
-    return await loop.run_in_executor(executor, get_embeddings_sync, text)
-
-
-def get_embeddings_sync(text):
+def get_embeddings_parallel(text):
     model = SentenceTransformer("intfloat/multilingual-e5-large-instruct")
     return text, model.encode(text)
 
