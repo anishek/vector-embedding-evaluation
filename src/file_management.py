@@ -21,16 +21,16 @@ class FileReader:
                 self.files_to_read.append(os.path.join(dir_path, file))
         self.files_iter = iter(self.files_to_read)
 
-    def file_encoding(self, file_path):
-        with open(file_path, "rb") as f:
-            result = chardet.detect(f.read())
-        return result["encoding"]
-
     def read_next(self):
         try:
             read_from_location = next(self.files_iter)
-            fe = self.file_encoding(read_from_location)
+            fe = file_encoding(read_from_location)
             with open(read_from_location, "r", encoding=fe) as current_file:
                 return read_from_location, current_file.read()
         except StopIteration:
             return None, None
+
+def file_encoding(file_path):
+    with open(file_path, "rb") as f:
+        result = chardet.detect(f.read())
+    return result["encoding"]
